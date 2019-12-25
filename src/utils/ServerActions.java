@@ -3,18 +3,17 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package main;
-
-import gui.ChatWindow;
+package utils;
 
 /**
  *
  * @author badashkhanov
  */
-public class Main {
-    
-    private static void main(String[] args){
-        new ChatWindow().setVisible(true);
-    }
-    
+public enum ServerActions {
+    USERS,
+    CHATROOMS,
+    INFO,
+    SENDMESSAGE,
+    ERROR,
+    UNKNOWN
 }

@@ -5,54 +5,102 @@
  */
 package gui;
 
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.net.*;
 import java.io.*;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
+import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import utils.Config;
+import chat.ChatManager;
 
 /**
  *
  * @author badashkhanov
  */
-public class ChatWindow extends javax.swing.JFrame {
+public class ChatWindow extends javax.swing.JFrame implements ChatUI {
     String username;
     Socket socket;
     BufferedReader reader;
     PrintWriter writer;
-    ArrayList<String> onlineUsersList = new ArrayList();
     Boolean isConnected = false;
+    ChatManager chatManager;
+    DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    //String today = dateFormat.format(new Date());
+    long today = 5000L;
     
     /**
      * Creates new form ChatWindow
      */
     public ChatWindow() {
         initComponents();
+        chatManager = new ChatManager(this);
+    }
+
+    @Override
+    public void displayUsers(ListModel listModel) {
+       userDisplayList.setModel(listModel);
+    }
+    
+    @Override
+    public void displayChatRooms(ListModel listModel){
+        chatRoomDisplayList.setModel(listModel);
+    }
+
+    @Override
+    public void clearLists(ListModel listModel) {
+        userDisplayList.setModel(listModel);
+        chatRoomDisplayList.setModel(listModel);
+    }
+
+    @Override
+    public void clearMainChatArea() {
+        mainChatArea.selectAll();
+        mainChatArea.replaceSelection("");
+    }
+
+    @Override
+    public void displayMessages() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
     public class IncomingReader implements Runnable {
         public void run() {
             String stream;
             String[] data;
-            String done = "Done", connect = "Connect", disconnect = "Disconnect", chat = "Chat";
+            String info = "INFO", users = "USERS", chatRooms = "CHATROOMS", sendMessage = "SENDMESSAGE", error = "ERROR", logout = "LOGOUT";
             
             try {
                 while((stream = reader.readLine()) != null){
-                    data = stream.split("À");
+                    data = stream.split(Config.DELIMITER);
+                    System.out.println(stream);
                     
-                    if(data[2].equals(chat)){
-                        mainChatArea.append(data[0] + ": " + data[1] + "\n");
-                    }else if(data[2].equals(connect)){
-                        mainChatArea.removeAll();
-                        userAdd(data[0]);
-                    }else if(data[2].equals(disconnect)){
-                        userRemove(data[0]);
-                    }else if(data[2].equals(done)){
-                        userDisplayList.setText("");
-                        writeUsers();
-                        onlineUsersList.clear();
+                    if(data[0].equals(info)){
+                        //mainChatArea.append(data[1] + "\n");
+                    }else if(data[0].equals(users)){
+                        chatManager.setUsers(data);
+                    }else if(data[0].equals(chatRooms)){
+                        chatManager.setChatRooms(data);
+                    }else if(data[0].equals(sendMessage)){
+                         if(data[4].equals(username)){
+                            chatManager.saveReceivedMessage(data);
+                            mainChatArea.append(data[3] + "\n");
+                         } else if(data[4].equals("Group chat")){
+                            mainChatArea.append(data[3] + "\n");
+                         }
+                    }else if(data[0].equals(error)){
+                        mainChatArea.append(data[1] + "\n");
+                    }else if(data[0].equals(logout)){
+                        mainChatArea.append(data[1] + "\n");
                     }
                 }
             }catch(Exception e){
                 mainChatArea.append("Connection with server was lost.\n");
+                //System.out.println(e);
             }
         }
     }
@@ -62,51 +110,37 @@ public class ChatWindow extends javax.swing.JFrame {
         IncomingReader.start();
     }
     
-    public void userAdd(String data) {
-        onlineUsersList.add(data);
-    }
-    
-    public void userRemove(String data) {
-        mainChatArea.append(data + " has disconnected.\n");
-    }
-    
-    public void writeUsers() {
-        String[] tempList = new String[(onlineUsersList.size())];
-        onlineUsersList.toArray(tempList);
-        for(String token: tempList){
-            
-            userDisplayList.append(token + "\n");
-        }
-    }
-    
     public void sendDisconnect() {
-        String userDisconnected = (username + "À  ÀDisconnect");
+        String userDisconnected = ("LOGOUT" + Config.DELIMITER + username);
         try{
             writer.println(userDisconnected);
             writer.flush();
         }catch(Exception e){
             mainChatArea.append("Could not send disconnect request.\n");
         }
+        isConnected = false;
+        usernameArea.setEditable(true);
     }
     
     public void Disconnect() {
         try{
-            mainChatArea.append("Disconnected.\n");
             socket.close();
         }catch(Exception e){
             mainChatArea.append("Failed to disconnect.\n");
         }
+        
+        chatManager.clearLists();
         isConnected = false;
         usernameArea.setEditable(true);
-        userDisplayList.setText("");
     }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
      * regenerated by the Form Editor.
      */
     @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">
     private void initComponents() {
 
         jPopupMenu1 = new javax.swing.JPopupMenu();
@@ -116,17 +150,17 @@ public class ChatWindow extends javax.swing.JFrame {
         connectBtn = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         mainChatArea = new javax.swing.JTextArea();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        chatRoomDisplayList = new javax.swing.JTextArea();
         jLabel1 = new javax.swing.JLabel();
         sendButton = new javax.swing.JButton();
-        jScrollPane3 = new javax.swing.JScrollPane();
-        userDisplayList = new javax.swing.JTextArea();
         jScrollPane4 = new javax.swing.JScrollPane();
         msgInputArea = new javax.swing.JTextArea();
         jLabel2 = new javax.swing.JLabel();
         disconnectBtn = new javax.swing.JButton();
         chatNameLabel = new javax.swing.JLabel();
+        jScrollPane5 = new javax.swing.JScrollPane();
+        userDisplayList = new javax.swing.JList<>();
+        jScrollPane6 = new javax.swing.JScrollPane();
+        chatRoomDisplayList = new javax.swing.JList<>();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
 
@@ -147,17 +181,46 @@ public class ChatWindow extends javax.swing.JFrame {
                 connectBtnActionPerformed(evt);
             }
         });
+        
+        userDisplayList.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                chatNameLabel.setText(chatManager.getOnlineUsersList().get(userDisplayList.getSelectedIndex()));
+            }
+        });
+        
+        chatRoomDisplayList.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                chatNameLabel.setText(chatManager.getChatRoomsList().get(chatRoomDisplayList.getSelectedIndex()));
+            }
+        });
+        
+        userDisplayList.addFocusListener(new FocusListener() {
+            @Override
+            public void focusLost(FocusEvent e) {
+                userDisplayList.clearSelection();
+            }
+
+            @Override
+            public void focusGained(FocusEvent e) { }
+        });
+        
+        chatRoomDisplayList.addFocusListener(new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent e) { }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                chatRoomDisplayList.clearSelection();
+            }
+        });
 
         mainChatArea.setEditable(false);
         mainChatArea.setColumns(20);
         mainChatArea.setLineWrap(true);
         mainChatArea.setRows(5);
         jScrollPane1.setViewportView(mainChatArea);
-
-        chatRoomDisplayList.setEditable(false);
-        chatRoomDisplayList.setColumns(20);
-        chatRoomDisplayList.setRows(5);
-        jScrollPane2.setViewportView(chatRoomDisplayList);
 
         jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel1.setText("Online Users");
@@ -168,11 +231,6 @@ public class ChatWindow extends javax.swing.JFrame {
                 sendButtonActionPerformed(evt);
             }
         });
-
-        userDisplayList.setEditable(false);
-        userDisplayList.setColumns(20);
-        userDisplayList.setRows(5);
-        jScrollPane3.setViewportView(userDisplayList);
 
         msgInputArea.setColumns(20);
         msgInputArea.setLineWrap(true);
@@ -190,8 +248,12 @@ public class ChatWindow extends javax.swing.JFrame {
         });
 
         chatNameLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        chatNameLabel.setText("Chat room #1");
+        chatNameLabel.setText("Choose who to chat with");
         chatNameLabel.setToolTipText("");
+
+        jScrollPane5.setViewportView(userDisplayList);
+
+        jScrollPane6.setViewportView(chatRoomDisplayList);
 
         jMenu1.setText("Help");
         jMenu1.setToolTipText("");
@@ -226,14 +288,13 @@ public class ChatWindow extends javax.swing.JFrame {
                                     .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 511, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                        .addGap(0, 0, Short.MAX_VALUE)
-                                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                                     .addGroup(layout.createSequentialGroup()
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 223, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                        .addGap(0, 0, Short.MAX_VALUE)))))
+                                        .addGap(6, 6, 6)
+                                        .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 223, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGap(0, 0, Short.MAX_VALUE))
+                                    .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))))
                         .addContainerGap())
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(chatNameLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 511, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -262,33 +323,36 @@ public class ChatWindow extends javax.swing.JFrame {
                             .addComponent(jScrollPane4)
                             .addComponent(sendButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(jScrollPane3)
+                        .addComponent(jScrollPane5)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jLabel2)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 225, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 225, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
 
         pack();
-    }// </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>
 
     private void usernameAreaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_usernameAreaActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_usernameAreaActionPerformed
 
     private void connectBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_connectBtnActionPerformed
-        // TODO add your handling code here:
+
         if (isConnected == false) {
             username = usernameArea.getText();
             usernameArea.setEditable(false);
+            clearMainChatArea();
             
             try {
                 socket = new Socket("127.0.0.1", 5000);
                 InputStreamReader streamReader = new InputStreamReader(socket.getInputStream());
                 reader = new BufferedReader(streamReader);
                 writer = new PrintWriter(socket.getOutputStream());
-                writer.println(username + "Àhas connected.ÀConnect");
+                writer.println("LOGIN" + Config.DELIMITER + username);
+                writer.println("GETUSERS");
+                writer.println("GETCHATROOMS");
                 writer.flush();
                 isConnected = true;
             } catch (Exception e) {
@@ -302,14 +366,24 @@ public class ChatWindow extends javax.swing.JFrame {
     }//GEN-LAST:event_connectBtnActionPerformed
 
     private void sendButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendButtonActionPerformed
-        // TODO add your handling code here:
+
         String emptyField = "";
-        if(msgInputArea.getText().equals(emptyField)){
+        String recipient = chatNameLabel.getText();
+        String message = "SENDMESSAGE" + Config.DELIMITER + username + Config.DELIMITER + today + Config.DELIMITER + msgInputArea.getText() + Config.DELIMITER + recipient;
+        ChatMessage chatMessage = new ChatMessage(username, today, msgInputArea.getText(), recipient);
+        if(msgInputArea.getText().equals(emptyField) || recipient.equals("Choose who to chat with")){
             msgInputArea.setText("");
             msgInputArea.requestFocus();
+            mainChatArea.append("Choose who to chat with" + "\n");
         }else{
             try{
-                writer.println(username + "À" + msgInputArea.getText() + "À" + "Chat");
+                writer.println(message);
+                
+                if(!chatNameLabel.equals("Choose who to chat with")){
+                    chatManager.saveSentMessage(message);
+                }
+                
+                mainChatArea.append("[" + today + " " + "to: " + recipient + "] " + msgInputArea.getText() + "\n");
                 writer.flush();
             }catch(Exception e){
                 msgInputArea.append("Message was not send.\n");
@@ -321,50 +395,30 @@ public class ChatWindow extends javax.swing.JFrame {
         msgInputArea.requestFocus();
     }//GEN-LAST:event_sendButtonActionPerformed
 
+    public class ChatMessage {
+        String mText;
+        Long mTimestamp;
+        String mSender;
+        String mReceiver;
+        
+        public ChatMessage(String text, Long timestamp, String sender, String receiver){
+            mSender = sender + Config.DELIMITER;
+            mTimestamp = timestamp;
+            mText = Config.DELIMITER + text + Config.DELIMITER;
+            mReceiver = receiver;
+        }   
+
+    }
+    
     private void disconnectBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_disconnectBtnActionPerformed
-        // TODO add your handling code here:
+
         sendDisconnect();
         Disconnect();
     }//GEN-LAST:event_disconnectBtnActionPerformed
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(ChatWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(ChatWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(ChatWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(ChatWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new ChatWindow().setVisible(true);
-            }
-        });
-    }
-
-    // Variables declaration - do not modify//GEN-BEGIN:variables
+    // Variables declaration - do not modify
     private javax.swing.JLabel chatNameLabel;
-    private javax.swing.JTextArea chatRoomDisplayList;
+    private javax.swing.JList<String> chatRoomDisplayList;
     private javax.swing.JButton connectBtn;
     private javax.swing.JButton disconnectBtn;
     private javax.swing.JLabel jLabel1;
@@ -374,14 +428,14 @@ public class ChatWindow extends javax.swing.JFrame {
     private javax.swing.JPopupMenu jPopupMenu1;
     private javax.swing.JPopupMenu jPopupMenu2;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JScrollPane jScrollPane5;
+    private javax.swing.JScrollPane jScrollPane6;
     private javax.swing.JTextArea mainChatArea;
     private javax.swing.JTextArea msgInputArea;
     private javax.swing.JButton sendButton;
-    private javax.swing.JTextArea userDisplayList;
+    private javax.swing.JList<String> userDisplayList;
     private javax.swing.JTextField usernameArea;
     private javax.swing.JLabel usernameLbl;
-    // End of variables declaration//GEN-END:variables
+    // End of variables declaration
 }
