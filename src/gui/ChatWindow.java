@@ -396,15 +396,16 @@ public class ChatWindow extends javax.swing.JFrame implements ChatUI {
         String recipient = chatNameLabel.getText();
         ChatMessage chatMessage = new ChatMessage(chatManager.getUsername(), msgInputArea.getText(), recipient);
 
-        if (msgInputArea.getText().equals(emptyField) || recipient.equals("Choose who to chat with")) {
+        if (msgInputArea.getText().equals(emptyField)) {
             msgInputArea.setText("");
             msgInputArea.requestFocus();
+        }else if (recipient.equals("Choose who to chat with")){
             mainChatArea.append("Choose who to chat with" + "\n");
         } else {
             try {
                 writer.println(chatMessage.getMessageForServer());
 
-                if (!recipient.equals("Choose who to chat with") && !recipient.equals("GroupChat")) {
+                if (!recipient.equals("Choose who to chat with") && !recipient.equals("GroupChat") && !username.equals(recipient)) {
                     chatManager.saveSentMessage(chatMessage);
                 }
 
