@@ -17,12 +17,15 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import utils.Config;
 import chat.ChatManager;
+import model.ChatMessage;
 
 /**
- *
- * @author badashkhanov
+ * @author Vladimir Badashkhanov
+ * @version 1.0
+ * @since December 2019
  */
 public class ChatWindow extends javax.swing.JFrame implements ChatUI {
+
     String username;
     Socket socket;
     BufferedReader reader;
@@ -30,9 +33,7 @@ public class ChatWindow extends javax.swing.JFrame implements ChatUI {
     Boolean isConnected = false;
     ChatManager chatManager;
     DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-    //String today = dateFormat.format(new Date());
-    long today = 5000L;
-    
+
     /**
      * Creates new form ChatWindow
      */
@@ -43,11 +44,11 @@ public class ChatWindow extends javax.swing.JFrame implements ChatUI {
 
     @Override
     public void displayUsers(ListModel listModel) {
-       userDisplayList.setModel(listModel);
+        userDisplayList.setModel(listModel);
     }
-    
+
     @Override
-    public void displayChatRooms(ListModel listModel){
+    public void displayChatRooms(ListModel listModel) {
         chatRoomDisplayList.setModel(listModel);
     }
 
@@ -64,43 +65,41 @@ public class ChatWindow extends javax.swing.JFrame implements ChatUI {
     }
 
     @Override
-    public void displayMessages() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public void displayMessages(ArrayList<ChatMessage> messages) {
+        mainChatArea.setText("");
+        for (ChatMessage chatMessage : messages) {
+            mainChatArea.append(chatMessage.getMessageForChatArea(chatManager.getUsername()));
+        }
     }
-    
+
     public class IncomingReader implements Runnable {
+
         public void run() {
             String stream;
             String[] data;
             String info = "INFO", users = "USERS", chatRooms = "CHATROOMS", sendMessage = "SENDMESSAGE", error = "ERROR", logout = "LOGOUT";
-            
+
             try {
-                while((stream = reader.readLine()) != null){
+                while ((stream = reader.readLine()) != null) {
                     data = stream.split(Config.DELIMITER);
                     System.out.println(stream);
-                    
-                    if(data[0].equals(info)){
-                        //mainChatArea.append(data[1] + "\n");
-                    }else if(data[0].equals(users)){
+
+                    if (data[0].equals(info)) {
+                        //TODO
+                    } else if (data[0].equals(users)) {
                         chatManager.setUsers(data);
-                    }else if(data[0].equals(chatRooms)){
+                    } else if (data[0].equals(chatRooms)) {
                         chatManager.setChatRooms(data);
-                    }else if(data[0].equals(sendMessage)){
-                         if(data[4].equals(username)){
-                            chatManager.saveReceivedMessage(data);
-                            mainChatArea.append(data[3] + "\n");
-                         } else if(data[4].equals("Group chat")){
-                            mainChatArea.append(data[3] + "\n");
-                         }
-                    }else if(data[0].equals(error)){
+                    } else if (data[0].equals(sendMessage)) {
+                        chatManager.processIncomingMessage(data);
+                    } else if (data[0].equals(error)) {
                         mainChatArea.append(data[1] + "\n");
-                    }else if(data[0].equals(logout)){
+                    } else if (data[0].equals(logout)) {
                         mainChatArea.append(data[1] + "\n");
                     }
                 }
-            }catch(Exception e){
-                mainChatArea.append("Connection with server was lost.\n");
-                //System.out.println(e);
+            } catch (Exception e) {
+                //mainChatArea.append("Connection with server was lost.\n");
             }
         }
     }
@@ -109,26 +108,26 @@ public class ChatWindow extends javax.swing.JFrame implements ChatUI {
         Thread IncomingReader = new Thread(new IncomingReader());
         IncomingReader.start();
     }
-    
+
     public void sendDisconnect() {
         String userDisconnected = ("LOGOUT" + Config.DELIMITER + username);
-        try{
+        try {
             writer.println(userDisconnected);
             writer.flush();
-        }catch(Exception e){
+        } catch (Exception e) {
             mainChatArea.append("Could not send disconnect request.\n");
         }
         isConnected = false;
         usernameArea.setEditable(true);
     }
-    
+
     public void Disconnect() {
-        try{
+        try {
             socket.close();
-        }catch(Exception e){
+        } catch (Exception e) {
             mainChatArea.append("Failed to disconnect.\n");
         }
-        
+
         chatManager.clearLists();
         isConnected = false;
         usernameArea.setEditable(true);
@@ -181,21 +180,25 @@ public class ChatWindow extends javax.swing.JFrame implements ChatUI {
                 connectBtnActionPerformed(evt);
             }
         });
-        
+
         userDisplayList.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
-                chatNameLabel.setText(chatManager.getOnlineUsersList().get(userDisplayList.getSelectedIndex()));
+                String selectedUsername = chatManager.getOnlineUsersList().get(userDisplayList.getSelectedIndex());
+                chatNameLabel.setText(selectedUsername);
+                chatManager.setSelectedUsername(selectedUsername);
             }
         });
-        
+
         chatRoomDisplayList.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
-                chatNameLabel.setText(chatManager.getChatRoomsList().get(chatRoomDisplayList.getSelectedIndex()));
+                String selectedChatRoom = chatManager.getChatRoomsList().get(chatRoomDisplayList.getSelectedIndex());
+                chatNameLabel.setText(selectedChatRoom);
+                chatManager.setSelectedUsername(selectedChatRoom);
             }
         });
-        
+
         userDisplayList.addFocusListener(new FocusListener() {
             @Override
             public void focusLost(FocusEvent e) {
@@ -203,12 +206,14 @@ public class ChatWindow extends javax.swing.JFrame implements ChatUI {
             }
 
             @Override
-            public void focusGained(FocusEvent e) { }
+            public void focusGained(FocusEvent e) {
+            }
         });
-        
+
         chatRoomDisplayList.addFocusListener(new FocusListener() {
             @Override
-            public void focusGained(FocusEvent e) { }
+            public void focusGained(FocusEvent e) {
+            }
 
             @Override
             public void focusLost(FocusEvent e) {
@@ -264,71 +269,71 @@ public class ChatWindow extends javax.swing.JFrame implements ChatUI {
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(usernameLbl, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(usernameArea, javax.swing.GroupLayout.PREFERRED_SIZE, 154, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(34, 34, 34)
-                                .addComponent(connectBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 94, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(disconnectBtn)
-                                .addGap(0, 0, Short.MAX_VALUE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                                        .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 394, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(sendButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 511, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                                .addContainerGap()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addGap(6, 6, 6)
-                                        .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 223, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(0, 0, Short.MAX_VALUE))
-                                    .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))))
-                        .addContainerGap())
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(chatNameLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 511, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                                        .addGroup(layout.createSequentialGroup()
+                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                        .addGroup(layout.createSequentialGroup()
+                                                                .addComponent(usernameLbl, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                                .addComponent(usernameArea, javax.swing.GroupLayout.PREFERRED_SIZE, 154, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                                .addGap(34, 34, 34)
+                                                                .addComponent(connectBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 94, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                                .addComponent(disconnectBtn)
+                                                                .addGap(0, 0, Short.MAX_VALUE))
+                                                        .addGroup(layout.createSequentialGroup()
+                                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                                                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                                                                .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 394, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                                                .addComponent(sendButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                                                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 511, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                                        .addGroup(layout.createSequentialGroup()
+                                                                                .addGap(6, 6, 6)
+                                                                                .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                                                                        .addGroup(layout.createSequentialGroup()
+                                                                                .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 223, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                                                .addGap(0, 0, Short.MAX_VALUE))
+                                                                        .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))))
+                                                .addContainerGap())
+                                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                                .addComponent(chatNameLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 511, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap(29, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(usernameLbl, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(usernameArea, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(connectBtn)
-                    .addComponent(disconnectBtn))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(chatNameLabel, javax.swing.GroupLayout.Alignment.TRAILING))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 484, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jScrollPane4)
-                            .addComponent(sendButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(jScrollPane5)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel2)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 225, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap())
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                                .addContainerGap(29, Short.MAX_VALUE)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                        .addComponent(usernameLbl, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(usernameArea, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(connectBtn)
+                                        .addComponent(disconnectBtn))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING)
+                                        .addComponent(chatNameLabel, javax.swing.GroupLayout.Alignment.TRAILING))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 484, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                                        .addComponent(jScrollPane4)
+                                                        .addComponent(sendButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                                .addComponent(jScrollPane5)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(jLabel2)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 225, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addContainerGap())
         );
 
         pack();
@@ -342,15 +347,16 @@ public class ChatWindow extends javax.swing.JFrame implements ChatUI {
 
         if (isConnected == false) {
             username = usernameArea.getText();
+            chatManager.setUsername(username);
             usernameArea.setEditable(false);
             clearMainChatArea();
-            
+
             try {
                 socket = new Socket("127.0.0.1", 5000);
                 InputStreamReader streamReader = new InputStreamReader(socket.getInputStream());
                 reader = new BufferedReader(streamReader);
                 writer = new PrintWriter(socket.getOutputStream());
-                writer.println("LOGIN" + Config.DELIMITER + username);
+                writer.println("LOGIN" + Config.DELIMITER + chatManager.getUsername());
                 writer.println("GETUSERS");
                 writer.println("GETCHATROOMS");
                 writer.flush();
@@ -360,7 +366,7 @@ public class ChatWindow extends javax.swing.JFrame implements ChatUI {
                 usernameArea.setEditable(true);
             }
             ListenThread();
-        } else if (isConnected == true){
+        } else if (isConnected == true) {
             mainChatArea.append("You are already connected.\n");
         }
     }//GEN-LAST:event_connectBtnActionPerformed
@@ -369,24 +375,24 @@ public class ChatWindow extends javax.swing.JFrame implements ChatUI {
 
         String emptyField = "";
         String recipient = chatNameLabel.getText();
-        String message = "SENDMESSAGE" + Config.DELIMITER + username + Config.DELIMITER + today + Config.DELIMITER + msgInputArea.getText() + Config.DELIMITER + recipient;
-        ChatMessage chatMessage = new ChatMessage(username, today, msgInputArea.getText(), recipient);
-        if(msgInputArea.getText().equals(emptyField) || recipient.equals("Choose who to chat with")){
+        ChatMessage chatMessage = new ChatMessage(chatManager.getUsername(), msgInputArea.getText(), recipient);
+
+        if (msgInputArea.getText().equals(emptyField) || recipient.equals("Choose who to chat with")) {
             msgInputArea.setText("");
             msgInputArea.requestFocus();
             mainChatArea.append("Choose who to chat with" + "\n");
-        }else{
-            try{
-                writer.println(message);
-                
-                if(!chatNameLabel.equals("Choose who to chat with")){
-                    chatManager.saveSentMessage(message);
+        } else {
+            try {
+                writer.println(chatMessage.getMessageForServer());
+
+                if (!recipient.equals("Choose who to chat with") && !recipient.equals("GroupChat")) {
+                    chatManager.saveSentMessage(chatMessage);
                 }
-                
-                mainChatArea.append("[" + today + " " + "to: " + recipient + "] " + msgInputArea.getText() + "\n");
+
+                mainChatArea.append(chatMessage.getMessageForChatArea(chatManager.getUsername()));
                 writer.flush();
-            }catch(Exception e){
-                msgInputArea.append("Message was not send.\n");
+            } catch (Exception e) {
+                msgInputArea.append("Message was not sent.\n");
             }
             msgInputArea.setText("");
             msgInputArea.requestFocus();
@@ -395,21 +401,7 @@ public class ChatWindow extends javax.swing.JFrame implements ChatUI {
         msgInputArea.requestFocus();
     }//GEN-LAST:event_sendButtonActionPerformed
 
-    public class ChatMessage {
-        String mText;
-        Long mTimestamp;
-        String mSender;
-        String mReceiver;
-        
-        public ChatMessage(String text, Long timestamp, String sender, String receiver){
-            mSender = sender + Config.DELIMITER;
-            mTimestamp = timestamp;
-            mText = Config.DELIMITER + text + Config.DELIMITER;
-            mReceiver = receiver;
-        }   
 
-    }
-    
     private void disconnectBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_disconnectBtnActionPerformed
 
         sendDisconnect();

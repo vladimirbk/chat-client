@@ -5,17 +5,20 @@
  */
 package gui;
 
+import java.util.ArrayList;
 import javax.swing.ListModel;
+import model.ChatMessage;
 
 /**
- *
- * @author badashkhanov
+ * @author Vladimir Badashkhanov
+ * @version 1.0
+ * @since December 2019
  */
 public interface ChatUI {
     
     public void displayUsers(ListModel listModel);
     public void displayChatRooms(ListModel listModel);
     public void clearLists(ListModel listModel);
-    public void clearMainChatArea();
-    public void displayMessages();   
+    public void clearMainChatArea();  
+    public void displayMessages(ArrayList<ChatMessage> messageStorage);
 }
