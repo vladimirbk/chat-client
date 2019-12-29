@@ -164,12 +164,6 @@ public class ChatWindow extends javax.swing.JFrame implements ChatUI {
 
         usernameLbl.setText("Username:");
 
-        usernameArea.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                usernameAreaActionPerformed(evt);
-            }
-        });
-
         connectBtn.setText("Connect");
         connectBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -328,10 +322,6 @@ public class ChatWindow extends javax.swing.JFrame implements ChatUI {
 
         pack();
     }// </editor-fold>
-
-    private void usernameAreaActionPerformed(java.awt.event.ActionEvent evt) {
-        // TODO add your handling code here:
-    }
 
     private void connectBtnActionPerformed(java.awt.event.ActionEvent evt) {
         if (isConnected == false) {
