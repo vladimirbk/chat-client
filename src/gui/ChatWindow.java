@@ -329,12 +329,11 @@ public class ChatWindow extends javax.swing.JFrame implements ChatUI {
         pack();
     }// </editor-fold>
 
-    private void usernameAreaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_usernameAreaActionPerformed
+    private void usernameAreaActionPerformed(java.awt.event.ActionEvent evt) {
         // TODO add your handling code here:
-    }//GEN-LAST:event_usernameAreaActionPerformed
+    }
 
-    private void connectBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_connectBtnActionPerformed
-
+    private void connectBtnActionPerformed(java.awt.event.ActionEvent evt) {
         if (isConnected == false) {
             username = usernameArea.getText();
             chatManager.setUsername(username);
@@ -359,10 +358,9 @@ public class ChatWindow extends javax.swing.JFrame implements ChatUI {
         } else if (isConnected == true) {
             mainChatArea.append("You are already connected.\n");
         }
-    }//GEN-LAST:event_connectBtnActionPerformed
+    }
 
-    private void sendButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendButtonActionPerformed
-
+    private void sendButtonActionPerformed(java.awt.event.ActionEvent evt) {
         String emptyField = "";
         String recipient = chatNameLabel.getText();
         ChatMessage chatMessage = new ChatMessage(chatManager.getUsername(), msgInputArea.getText(), recipient);
@@ -389,14 +387,13 @@ public class ChatWindow extends javax.swing.JFrame implements ChatUI {
         }
         msgInputArea.setText("");
         msgInputArea.requestFocus();
-    }//GEN-LAST:event_sendButtonActionPerformed
+    }
 
 
-    private void disconnectBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_disconnectBtnActionPerformed
-
+    private void disconnectBtnActionPerformed(java.awt.event.ActionEvent evt) {
         sendDisconnect();
         Disconnect();
-    }//GEN-LAST:event_disconnectBtnActionPerformed
+    }
 
     // Variables declaration - do not modify
     private javax.swing.JLabel chatNameLabel;
