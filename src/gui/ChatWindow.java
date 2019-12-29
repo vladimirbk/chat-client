@@ -142,8 +142,6 @@ public class ChatWindow extends javax.swing.JFrame implements ChatUI {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">
     private void initComponents() {
 
-        jPopupMenu1 = new javax.swing.JPopupMenu();
-        jPopupMenu2 = new javax.swing.JPopupMenu();
         usernameLbl = new javax.swing.JLabel();
         usernameArea = new javax.swing.JTextField();
         connectBtn = new javax.swing.JButton();
@@ -160,8 +158,6 @@ public class ChatWindow extends javax.swing.JFrame implements ChatUI {
         userDisplayList = new javax.swing.JList<>();
         jScrollPane6 = new javax.swing.JScrollPane();
         chatRoomDisplayList = new javax.swing.JList<>();
-        jMenuBar1 = new javax.swing.JMenuBar();
-        jMenu1 = new javax.swing.JMenu();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("ChatWindow");
@@ -259,12 +255,6 @@ public class ChatWindow extends javax.swing.JFrame implements ChatUI {
         jScrollPane5.setViewportView(userDisplayList);
 
         jScrollPane6.setViewportView(chatRoomDisplayList);
-
-        jMenu1.setText("Help");
-        jMenu1.setToolTipText("");
-        jMenuBar1.add(jMenu1);
-
-        setJMenuBar(jMenuBar1);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -415,10 +405,6 @@ public class ChatWindow extends javax.swing.JFrame implements ChatUI {
     private javax.swing.JButton disconnectBtn;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JMenu jMenu1;
-    private javax.swing.JMenuBar jMenuBar1;
-    private javax.swing.JPopupMenu jPopupMenu1;
-    private javax.swing.JPopupMenu jPopupMenu2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JScrollPane jScrollPane5;
