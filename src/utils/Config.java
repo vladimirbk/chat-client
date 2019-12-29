@@ -6,5 +6,6 @@ package utils;
  * @since December 2019
  */
 public final class Config {
+
     public static final String DELIMITER = "#&&#";
 }

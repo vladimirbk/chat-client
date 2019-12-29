@@ -15,10 +15,14 @@ import model.ChatMessage;
  * @since December 2019
  */
 public interface ChatUI {
-    
+
     public void displayUsers(ListModel listModel);
+
     public void displayChatRooms(ListModel listModel);
+
     public void clearLists(ListModel listModel);
-    public void clearMainChatArea();  
+
+    public void clearMainChatArea();
+
     public void displayMessages(ArrayList<ChatMessage> messageStorage);
 }

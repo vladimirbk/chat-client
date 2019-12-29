@@ -379,7 +379,6 @@ public class ChatWindow extends javax.swing.JFrame implements ChatUI {
         msgInputArea.requestFocus();
     }
 
-
     private void disconnectBtnActionPerformed(java.awt.event.ActionEvent evt) {
         sendDisconnect();
         Disconnect();
