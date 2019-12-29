@@ -10,6 +10,8 @@ import javax.swing.ListModel;
 import model.ChatMessage;
 
 /**
+ * Class which groups related to UI methods.
+ * 
  * @author Vladimir Badashkhanov
  * @version 1.0
  * @since December 2019

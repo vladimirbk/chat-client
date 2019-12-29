@@ -8,12 +8,18 @@ package main;
 import gui.ChatWindow;
 
 /**
+ * Class that contains method main.
+ * 
  * @author Vladimir Badashkhanov
  * @version 1.0
  * @since December 2019
  */
 public class ChatApplication {
 
+    /**
+     * Method which runs the whole application.
+     * @param args 
+     */
     public static void main(String args[]) {
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {

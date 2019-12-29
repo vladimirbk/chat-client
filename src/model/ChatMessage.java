@@ -11,6 +11,8 @@ import java.util.Date;
 import utils.Config;
 
 /**
+ * Class which contains methods for message initialization, sending and display.
+ * 
  * @author Vladimir Badashkhanov
  * @version 1.0
  * @since December 2019
@@ -24,6 +26,12 @@ public class ChatMessage {
     String mSender;
     String mReceiver;
 
+    /**
+     * Method for making a message an object.
+     * @param username
+     * @param text
+     * @param recipient 
+     */
     public ChatMessage(String username, String text, String recipient) {
         mSender = username;
         mReceiver = recipient;
@@ -31,39 +39,61 @@ public class ChatMessage {
         mTimestamp = new Date().getTime();
     }
 
+    /**
+     * Method which returns text of a message.
+     * @return 
+     */
     public String getMessage() {
         return mText;
     }
-
+    /**
+     * Method which returns date of a message in a desired format.
+     * @return 
+     */
     public String getTimestampString() {
         return dateFormat.format(new Date(mTimestamp));
     }
 
+    /**
+     * Method which builds a message in a form of string which is going to be sent
+     * to server.
+     * @return 
+     */
     public String getMessageForServer() {
         return "SENDMESSAGE" + Config.DELIMITER + mSender + Config.DELIMITER + mTimestamp + Config.DELIMITER + mText + Config.DELIMITER + mReceiver;
     }
 
+    /**
+     * Method which puts message in a right for for displaying to user.
+     * @param username
+     * @return 
+     */
     public String getMessageForChatArea(String username) {
         String message;
         if (getReceiver().equals(username)) {
             message = "[" + getTimestampString() + " from: " + mSender + "] " + mText + "\n";
-        } else {
+        } else if(getReceiver().equals("GroupChat") && getSender().equals(mSender)) {
+            message = "[" + getTimestampString() + " " + mSender + " " + " in: " + mReceiver + "] " + mText + "\n";
+        } else {   
             message = "[" + getTimestampString() + " to: " + mReceiver + "] " + mText + "\n";
         }
 
         return message;
     }
 
+    /**
+     * Method which returns sender of a message.
+     * @return 
+     */
     public String getSender() {
         return mSender;
     }
 
+    /**
+     * Method which returns receiver of a message.
+     * @return 
+     */
     public String getReceiver() {
         return mReceiver;
-    }
-
-    @Override
-    public String toString() {
-        return "Sender =" + mSender + " receiver=" + mReceiver + " text=" + mText + " ";
     }
 }

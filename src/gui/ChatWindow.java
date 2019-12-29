@@ -20,6 +20,8 @@ import chat.ChatManager;
 import model.ChatMessage;
 
 /**
+ * Class which contains UI and related methods and listeners.
+ * 
  * @author Vladimir Badashkhanov
  * @version 1.0
  * @since December 2019
@@ -42,28 +44,47 @@ public class ChatWindow extends javax.swing.JFrame implements ChatUI {
         chatManager = new ChatManager(this);
     }
 
+    /**
+     * Method which display users in JList.
+     * @param listModel 
+     */
     @Override
     public void displayUsers(ListModel listModel) {
         userDisplayList.setModel(listModel);
     }
 
+    /**
+     * Method which display chatRooms in JList.
+     * @param listModel 
+     */
     @Override
     public void displayChatRooms(ListModel listModel) {
         chatRoomDisplayList.setModel(listModel);
     }
-
+    
+    /**
+     * Method which clears JLists.
+     * @param listModel 
+     */
     @Override
     public void clearLists(ListModel listModel) {
         userDisplayList.setModel(listModel);
         chatRoomDisplayList.setModel(listModel);
     }
 
+    /**
+     * Method which clears main chat area.
+     */
     @Override
     public void clearMainChatArea() {
         mainChatArea.selectAll();
         mainChatArea.replaceSelection("");
     }
 
+    /**
+     * Method which display messages sent to a user or a chat room.
+     * @param messages 
+     */
     @Override
     public void displayMessages(ArrayList<ChatMessage> messages) {
         mainChatArea.setText("");
@@ -72,6 +93,9 @@ public class ChatWindow extends javax.swing.JFrame implements ChatUI {
         }
     }
 
+    /**
+     * Class for processing incoming requests from server.
+     */
     public class IncomingReader implements Runnable {
 
         public void run() {
@@ -104,11 +128,17 @@ public class ChatWindow extends javax.swing.JFrame implements ChatUI {
         }
     }
 
+    /**
+     * Method which invokes incoming reader via thread.
+     */
     public void ListenThread() {
         Thread IncomingReader = new Thread(new IncomingReader());
         IncomingReader.start();
     }
 
+    /**
+     * Method which sends disconnect request to server.
+     */
     public void sendDisconnect() {
         String userDisconnected = ("LOGOUT" + Config.DELIMITER + username);
         try {
@@ -121,6 +151,9 @@ public class ChatWindow extends javax.swing.JFrame implements ChatUI {
         usernameArea.setEditable(true);
     }
 
+    /**
+     * Method which closes socket.
+     */
     public void Disconnect() {
         try {
             socket.close();
@@ -323,6 +356,10 @@ public class ChatWindow extends javax.swing.JFrame implements ChatUI {
         pack();
     }// </editor-fold>
 
+    /**
+     * Method which sends LOGIN request to server and therefore connects to server.
+     * @param evt 
+     */
     private void connectBtnActionPerformed(java.awt.event.ActionEvent evt) {
         if (isConnected == false) {
             username = usernameArea.getText();
@@ -350,6 +387,10 @@ public class ChatWindow extends javax.swing.JFrame implements ChatUI {
         }
     }
 
+    /**
+     * Method which sends message written by user to a server.
+     * @param evt 
+     */
     private void sendButtonActionPerformed(java.awt.event.ActionEvent evt) {
         String emptyField = "";
         String recipient = chatNameLabel.getText();
@@ -379,6 +420,11 @@ public class ChatWindow extends javax.swing.JFrame implements ChatUI {
         msgInputArea.requestFocus();
     }
 
+    /**
+     * Method that invokes methods related to disconnect functionality after
+     * clicking on a disconnect button.
+     * @param evt 
+     */
     private void disconnectBtnActionPerformed(java.awt.event.ActionEvent evt) {
         sendDisconnect();
         Disconnect();
