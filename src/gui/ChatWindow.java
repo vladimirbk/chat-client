@@ -106,7 +106,6 @@ public class ChatWindow extends javax.swing.JFrame implements ChatUI {
             try {
                 while ((stream = reader.readLine()) != null) {
                     data = stream.split(Config.DELIMITER);
-                    System.out.println(stream);
 
                     if (data[0].equals(info)) {
                         //TODO
@@ -427,6 +426,7 @@ public class ChatWindow extends javax.swing.JFrame implements ChatUI {
      * @param evt 
      */
     private void disconnectBtnActionPerformed(java.awt.event.ActionEvent evt) {
+        clearMainChatArea();
         sendDisconnect();
         Disconnect();
     }
