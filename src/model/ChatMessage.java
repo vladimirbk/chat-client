@@ -15,7 +15,7 @@ import utils.Config;
  * 
  * @author Vladimir Badashkhanov
  * @version 1.0
- * @since December 2019
+ * @created December 2019
  */
 public class ChatMessage {
 
