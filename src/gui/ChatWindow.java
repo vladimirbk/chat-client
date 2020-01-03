@@ -17,6 +17,8 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import utils.Config;
 import chat.ChatManager;
+import java.awt.Color;
+import java.awt.Component;
 import model.ChatMessage;
 
 /**
@@ -115,6 +117,7 @@ public class ChatWindow extends javax.swing.JFrame implements ChatUI {
                         chatManager.setChatRooms(data);
                     } else if (data[0].equals(sendMessage)) {
                         chatManager.processIncomingMessage(data);
+                        newMessageNotification(userDisplayList, data);
                     } else if (data[0].equals(error)) {
                         mainChatArea.append(data[1] + "\n");
                     } else if (data[0].equals(logout)) {
@@ -430,6 +433,23 @@ public class ChatWindow extends javax.swing.JFrame implements ChatUI {
         sendDisconnect();
         Disconnect();
     }
+    
+    private void newMessageNotification(JList list, String[] data) {
+        list.setCellRenderer(new DefaultListCellRenderer() {
+
+            @Override
+            public Component getListCellRendererComponent(JList list, Object value, int index,
+                    boolean isSelected, boolean cellHasFocus) {
+                Component c = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);                 
+                    if (value.toString().contains(data[1]) || value.toString().contains(chatNameLabel.getText())) {
+                        Color fg = value.toString().contains(data[1]) ? Color.GREEN : Color.WHITE;
+                        setBackground(fg);
+                    }
+                return c;
+            }
+        });
+    }
+
 
     // Variables declaration - do not modify
     private javax.swing.JLabel chatNameLabel;
