@@ -23,7 +23,7 @@ import model.ChatMessage;
 
 /**
  * Class which contains UI and related methods and listeners.
- * 
+ *
  * @author Vladimir Badashkhanov
  * @version 1.0
  * @created December 2019
@@ -48,7 +48,8 @@ public class ChatWindow extends javax.swing.JFrame implements ChatUI {
 
     /**
      * Method which display users in JList.
-     * @param listModel 
+     *
+     * @param listModel
      */
     @Override
     public void displayUsers(ListModel listModel) {
@@ -57,16 +58,18 @@ public class ChatWindow extends javax.swing.JFrame implements ChatUI {
 
     /**
      * Method which display chatRooms in JList.
-     * @param listModel 
+     *
+     * @param listModel
      */
     @Override
     public void displayChatRooms(ListModel listModel) {
         chatRoomDisplayList.setModel(listModel);
     }
-    
+
     /**
      * Method which clears JLists.
-     * @param listModel 
+     *
+     * @param listModel
      */
     @Override
     public void clearLists(ListModel listModel) {
@@ -85,7 +88,8 @@ public class ChatWindow extends javax.swing.JFrame implements ChatUI {
 
     /**
      * Method which display messages sent to a user or a chat room.
-     * @param messages 
+     *
+     * @param messages
      */
     @Override
     public void displayMessages(ArrayList<ChatMessage> messages) {
@@ -108,7 +112,6 @@ public class ChatWindow extends javax.swing.JFrame implements ChatUI {
             try {
                 while ((stream = reader.readLine()) != null) {
                     data = stream.split(Config.DELIMITER);
-
                     if (data[0].equals(info)) {
                         //TODO
                     } else if (data[0].equals(users)) {
@@ -117,7 +120,9 @@ public class ChatWindow extends javax.swing.JFrame implements ChatUI {
                         chatManager.setChatRooms(data);
                     } else if (data[0].equals(sendMessage)) {
                         chatManager.processIncomingMessage(data);
-                        newMessageNotification(userDisplayList, data);
+                        chatManager.saveUserReceivedMessage(data);
+                        newMessageNotification(userDisplayList);
+                        newMessageNotification(chatRoomDisplayList);
                     } else if (data[0].equals(error)) {
                         mainChatArea.append(data[1] + "\n");
                     } else if (data[0].equals(logout)) {
@@ -212,6 +217,7 @@ public class ChatWindow extends javax.swing.JFrame implements ChatUI {
                 String selectedUsername = chatManager.getOnlineUsersList().get(userDisplayList.getSelectedIndex());
                 chatNameLabel.setText(selectedUsername);
                 chatManager.setSelectedUsername(selectedUsername);
+                chatManager.getUserReceivedMessage().remove(chatNameLabel.getText());
             }
         });
 
@@ -221,6 +227,7 @@ public class ChatWindow extends javax.swing.JFrame implements ChatUI {
                 String selectedChatRoom = chatManager.getChatRoomsList().get(chatRoomDisplayList.getSelectedIndex());
                 chatNameLabel.setText(selectedChatRoom);
                 chatManager.setSelectedUsername(selectedChatRoom);
+                chatManager.getUserReceivedMessage().remove(chatNameLabel.getText());
             }
         });
 
@@ -359,8 +366,10 @@ public class ChatWindow extends javax.swing.JFrame implements ChatUI {
     }// </editor-fold>
 
     /**
-     * Method which sends LOGIN request to server and therefore connects to server.
-     * @param evt 
+     * Method which sends LOGIN request to server and therefore connects to
+     * server.
+     *
+     * @param evt
      */
     private void connectBtnActionPerformed(java.awt.event.ActionEvent evt) {
         if (isConnected == false) {
@@ -391,7 +400,8 @@ public class ChatWindow extends javax.swing.JFrame implements ChatUI {
 
     /**
      * Method which sends message written by user to a server.
-     * @param evt 
+     *
+     * @param evt
      */
     private void sendButtonActionPerformed(java.awt.event.ActionEvent evt) {
         String emptyField = "";
@@ -401,7 +411,7 @@ public class ChatWindow extends javax.swing.JFrame implements ChatUI {
         if (msgInputArea.getText().equals(emptyField)) {
             msgInputArea.setText("");
             msgInputArea.requestFocus();
-        }else if (recipient.equals("Choose who to chat with")){
+        } else if (recipient.equals("Choose who to chat with")) {
             mainChatArea.append("Choose who to chat with" + "\n");
         } else {
             try {
@@ -426,30 +436,33 @@ public class ChatWindow extends javax.swing.JFrame implements ChatUI {
     /**
      * Method that invokes methods related to disconnect functionality after
      * clicking on a disconnect button.
-     * @param evt 
+     *
+     * @param evt
      */
     private void disconnectBtnActionPerformed(java.awt.event.ActionEvent evt) {
         clearMainChatArea();
         sendDisconnect();
         Disconnect();
     }
-    
-    private void newMessageNotification(JList list, String[] data) {
+
+    /**
+     * Custom renderer for changing background color of certain JList items.
+     *
+     * @param list
+     */
+    private void newMessageNotification(JList list) {
         list.setCellRenderer(new DefaultListCellRenderer() {
 
             @Override
-            public Component getListCellRendererComponent(JList list, Object value, int index,
-                    boolean isSelected, boolean cellHasFocus) {
-                Component c = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);                 
-                    if (value.toString().contains(data[1]) || value.toString().contains(chatNameLabel.getText())) {
-                        Color fg = value.toString().contains(data[1]) ? Color.GREEN : Color.WHITE;
-                        setBackground(fg);
-                    }
+            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                Component c = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                if (chatManager.getUserReceivedMessage().contains(value.toString())) {
+                    setBackground(Color.GREEN);
+                }
                 return c;
             }
         });
     }
-
 
     // Variables declaration - do not modify
     private javax.swing.JLabel chatNameLabel;

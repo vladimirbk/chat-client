@@ -12,7 +12,7 @@ import model.ChatMessage;
 
 /**
  * Class which partially contains logic of Chat application.
- * 
+ *
  * @author Vladimir Badashkhanov
  * @version 1.0
  * @created December 2019
@@ -27,11 +27,14 @@ public class ChatManager {
 
     ArrayList<ChatMessage> messageStorage = new ArrayList();
 
+    ArrayList<String> userReceivedMessage = new ArrayList();
+
     ChatUI mChatUI;
 
     /**
      * Creates instance of ChatUI.
-     * @param chatUI 
+     *
+     * @param chatUI
      */
     public ChatManager(ChatUI chatUI) {
         mChatUI = chatUI;
@@ -39,7 +42,8 @@ public class ChatManager {
 
     /**
      * Method which returns online users ArrayList.
-     * @return 
+     *
+     * @return
      */
     public ArrayList<String> getOnlineUsersList() {
         return onlineUsersList;
@@ -47,7 +51,8 @@ public class ChatManager {
 
     /**
      * Method which returns chat rooms ArrayList.
-     * @return 
+     *
+     * @return
      */
     public ArrayList<String> getChatRoomsList() {
         return chatRoomsList;
@@ -55,7 +60,8 @@ public class ChatManager {
 
     /**
      * Method for adding received active users to online users ArrayList.
-     * @param data 
+     *
+     * @param data
      */
     public void addUserToList(String data) {
         onlineUsersList.add(data);
@@ -63,12 +69,13 @@ public class ChatManager {
 
     /**
      * Method for adding received chat room from server to chat room ArrayList.
-     * @param data 
+     *
+     * @param data
      */
     public void addChatroomToList(String data) {
         chatRoomsList.add(data);
     }
-    
+
     /**
      * Method for clearing onlineUsers ArrayList.
      */
@@ -100,7 +107,8 @@ public class ChatManager {
 
     /**
      * Method which returns mConnectedUsername string.
-     * @return 
+     *
+     * @return
      */
     public String getUsername() {
         return mConnectedUsername;
@@ -108,7 +116,8 @@ public class ChatManager {
 
     /**
      * Method which sets user's username value to mConnectedUsername string.
-     * @param username 
+     *
+     * @param username
      */
     public void setUsername(String username) {
         mConnectedUsername = username;
@@ -116,25 +125,33 @@ public class ChatManager {
 
     /**
      * Method which returns mSelectedUsername string.
-     * @return 
+     *
+     * @return
      */
     public String getSelectedUsername() {
         return mSelectedUsername;
     }
 
     /**
-     * Method which sets a selected value from JLists to mSelectedUsername string.
-     * @param username 
+     * Method which sets a selected value from JLists to mSelectedUsername
+     * string.
+     *
+     * @param username
      */
     public void setSelectedUsername(String username) {
         mSelectedUsername = username;
         displayMessages();
     }
 
+    public ArrayList<String> getUserReceivedMessage() {
+        return userReceivedMessage;
+    }
+
     /**
      * Method for saving users in separate ArrayList via addUserToList method.
      * Invokes displayUsers method.
-     * @param data 
+     *
+     * @param data
      */
     public void setUsers(String[] data) {
         clearUsers();
@@ -145,9 +162,10 @@ public class ChatManager {
     }
 
     /**
-     * Method for saving chatRooms in separate ArrayList via addChatroomToList method.
-     * Invokes displayChatRooms method.
-     * @param data 
+     * Method for saving chatRooms in separate ArrayList via addChatroomToList
+     * method. Invokes displayChatRooms method.
+     *
+     * @param data
      */
     public void setChatRooms(String[] data) {
         clearChatRooms();
@@ -156,10 +174,10 @@ public class ChatManager {
         }
         displayChatRooms();
     }
-    
+
     /**
-     * Method that adds received online users to a temporary ArrayList,
-     * and passes values to demoList. Invokes method from ChatUI class.
+     * Method that adds received online users to a temporary ArrayList, and
+     * passes values to demoList. Invokes method from ChatUI class.
      */
     public void displayUsers() {
         String[] tempList = new String[(onlineUsersList.size())];
@@ -172,10 +190,10 @@ public class ChatManager {
 
         mChatUI.displayUsers(demoList);
     }
-    
+
     /**
-     * Method that adds received chatRooms to a temporary ArrayList,
-     * and passes values to demoList. Invokes method from ChatUI class.
+     * Method that adds received chatRooms to a temporary ArrayList, and passes
+     * values to demoList. Invokes method from ChatUI class.
      */
     public void displayChatRooms() {
         String[] tempList = new String[(chatRoomsList.size())];
@@ -190,7 +208,8 @@ public class ChatManager {
 
     /**
      * Method for saving messages received from server.
-     * @param messageFromServer 
+     *
+     * @param messageFromServer
      */
     public void saveReceivedMessage(String[] messageFromServer) {
         ChatMessage receivedChatMessage = new ChatMessage(messageFromServer[1], messageFromServer[3], messageFromServer[4]);
@@ -200,7 +219,8 @@ public class ChatManager {
 
     /**
      * Method for saving messages sent by user.
-     * @param chatMessage 
+     *
+     * @param chatMessage
      */
     public void saveSentMessage(ChatMessage chatMessage) {
         messageStorage.add(chatMessage);
@@ -221,12 +241,26 @@ public class ChatManager {
 
     /**
      * Method for saving messages only for a certain user or a group chat.
-     * @param data 
+     *
+     * @param data
      */
     public void processIncomingMessage(String[] data) {
         if (data[4].equals(mConnectedUsername) || data[4].equals("GroupChat")) {
             saveReceivedMessage(data);
         }
 
+    }
+
+    /**
+     * Method which saves user who received a message to an array.
+     *
+     * @param data
+     */
+    public void saveUserReceivedMessage(String[] data) {
+        if (data[4].equals("GroupChat")) {
+            userReceivedMessage.add(data[4]);
+        } else {
+            userReceivedMessage.add(data[1]);
+        }
     }
 }
