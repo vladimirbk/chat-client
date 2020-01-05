@@ -464,6 +464,8 @@ public class ChatWindow extends javax.swing.JFrame implements ChatUI {
      */
     private void initSettings() {
         this.addWindowListener(exitListener);
+        setResizable(false);
+        setTitle("Chat application");
     }
 
     /**
