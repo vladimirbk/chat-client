@@ -19,6 +19,9 @@ import utils.Config;
 import chat.ChatManager;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import model.ChatMessage;
 
 /**
@@ -43,13 +46,14 @@ public class ChatWindow extends javax.swing.JFrame implements ChatUI {
      */
     public ChatWindow() {
         initComponents();
+        initSettings();
         chatManager = new ChatManager(this);
     }
 
     /**
      * Method which display users in JList.
      *
-     * @param listModel
+     * @param listModel users list
      */
     @Override
     public void displayUsers(ListModel listModel) {
@@ -59,7 +63,7 @@ public class ChatWindow extends javax.swing.JFrame implements ChatUI {
     /**
      * Method which display chatRooms in JList.
      *
-     * @param listModel
+     * @param listModel chat rooms list
      */
     @Override
     public void displayChatRooms(ListModel listModel) {
@@ -69,7 +73,7 @@ public class ChatWindow extends javax.swing.JFrame implements ChatUI {
     /**
      * Method which clears JLists.
      *
-     * @param listModel
+     * @param listModel users and chat rooms list
      */
     @Override
     public void clearLists(ListModel listModel) {
@@ -89,7 +93,7 @@ public class ChatWindow extends javax.swing.JFrame implements ChatUI {
     /**
      * Method which display messages sent to a user or a chat room.
      *
-     * @param messages
+     * @param messages messages for certain user
      */
     @Override
     public void displayMessages(ArrayList<ChatMessage> messages) {
@@ -108,7 +112,6 @@ public class ChatWindow extends javax.swing.JFrame implements ChatUI {
             String stream;
             String[] data;
             String info = "INFO", users = "USERS", chatRooms = "CHATROOMS", sendMessage = "SENDMESSAGE", error = "ERROR", logout = "LOGOUT";
-
             try {
                 while ((stream = reader.readLine()) != null) {
                     data = stream.split(Config.DELIMITER);
@@ -369,7 +372,7 @@ public class ChatWindow extends javax.swing.JFrame implements ChatUI {
      * Method which sends LOGIN request to server and therefore connects to
      * server.
      *
-     * @param evt
+     * @param evt click event
      */
     private void connectBtnActionPerformed(java.awt.event.ActionEvent evt) {
         if (isConnected == false) {
@@ -401,7 +404,7 @@ public class ChatWindow extends javax.swing.JFrame implements ChatUI {
     /**
      * Method which sends message written by user to a server.
      *
-     * @param evt
+     * @param evt click event
      */
     private void sendButtonActionPerformed(java.awt.event.ActionEvent evt) {
         String emptyField = "";
@@ -437,7 +440,7 @@ public class ChatWindow extends javax.swing.JFrame implements ChatUI {
      * Method that invokes methods related to disconnect functionality after
      * clicking on a disconnect button.
      *
-     * @param evt
+     * @param evt click event
      */
     private void disconnectBtnActionPerformed(java.awt.event.ActionEvent evt) {
         clearMainChatArea();
@@ -446,9 +449,27 @@ public class ChatWindow extends javax.swing.JFrame implements ChatUI {
     }
 
     /**
+     * Implementation of a custom listener for frame's closing operation
+     */
+    WindowListener exitListener = new WindowAdapter() {
+        @Override
+        public void windowClosing(WindowEvent e) {
+            sendDisconnect();
+            System.exit(0);
+        }
+    };
+
+    /**
+     * Method which contains settings of a frame
+     */
+    private void initSettings() {
+        this.addWindowListener(exitListener);
+    }
+
+    /**
      * Custom renderer for changing background color of certain JList items.
      *
-     * @param list
+     * @param list JList
      */
     private void newMessageNotification(JList list) {
         list.setCellRenderer(new DefaultListCellRenderer() {

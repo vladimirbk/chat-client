@@ -9,7 +9,7 @@ import gui.ChatWindow;
 
 /**
  * Class that contains method main.
- * 
+ *
  * @author Vladimir Badashkhanov
  * @version 1.0
  * @created December 2019
@@ -18,7 +18,8 @@ public class ChatApplication {
 
     /**
      * Method which runs the whole application.
-     * @param args 
+     *
+     * @param args arguments
      */
     public static void main(String args[]) {
         try {
@@ -39,7 +40,9 @@ public class ChatApplication {
         }
         //</editor-fold>
 
-        /* Create and display the form */
+        /**
+         * Create and display the form
+         */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 new ChatWindow().setVisible(true);
