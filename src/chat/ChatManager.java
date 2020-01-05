@@ -263,10 +263,10 @@ public class ChatManager {
      * @param data user who received message
      */
     public void saveUserReceivedMessage(String[] data) {
-        if (data[4].equals("GroupChat")) {
-            userReceivedMessage.add(data[4]);
-        } else {
+        if (!data[4].equals("GroupChat")) {
             userReceivedMessage.add(data[1]);
+        } else if (data[4].equals("GroupChat") && !mSelectedUsername.equals("GroupChat")) {
+            userReceivedMessage.add(data[4]);
         }
     }
 }
